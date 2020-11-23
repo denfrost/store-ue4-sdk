@@ -86,7 +86,7 @@ void UXsollaLoginSubsystem::RegisterUser(const FString& Username, const FString&
 	const FOnRequestSuccess& SuccessCallback, const FOnAuthError& ErrorCallback)
 {
 	const UXsollaLoginSettings* Settings = FXsollaLoginModule::Get().GetSettings();
-	
+
 	if (IOnlineSubsystem::IsEnabled(STEAM_SUBSYSTEM) && Settings->bUseSteamAuthorization)
 	{
 		UE_LOG(LogXsollaLogin, Error, TEXT("%s: User registration should be handled via Steam"), *VA_FUNC_LINE);
@@ -108,7 +108,7 @@ void UXsollaLoginSubsystem::AuthenticateUser(const FString& Username, const FStr
 	const FOnAuthUpdate& SuccessCallback, const FOnAuthError& ErrorCallback, bool bRememberMe)
 {
 	const UXsollaLoginSettings* Settings = FXsollaLoginModule::Get().GetSettings();
-	
+
 	if (IOnlineSubsystem::IsEnabled(STEAM_SUBSYSTEM) && Settings->bUseSteamAuthorization)
 	{
 		UE_LOG(LogXsollaLogin, Error, TEXT("%s: User authentication should be handled via Steam"), *VA_FUNC_LINE);
@@ -136,7 +136,7 @@ void UXsollaLoginSubsystem::AuthenticateUser(const FString& Username, const FStr
 void UXsollaLoginSubsystem::ResetUserPassword(const FString& User, const FOnRequestSuccess& SuccessCallback, const FOnAuthError& ErrorCallback)
 {
 	const UXsollaLoginSettings* Settings = FXsollaLoginModule::Get().GetSettings();
-	
+
 	if (IOnlineSubsystem::IsEnabled(STEAM_SUBSYSTEM) && Settings->bUseSteamAuthorization)
 	{
 		UE_LOG(LogXsollaLogin, Error, TEXT("%s: User password reset should be handled via Steam"), *VA_FUNC_LINE);
@@ -221,16 +221,16 @@ void UXsollaLoginSubsystem::AuthenticateViaProviderProject(const FString& AuthTo
 	// Generate endpoint url
 	const UXsollaLoginSettings* Settings = FXsollaLoginModule::Get().GetSettings();
 	const FString Url = FString::Printf(TEXT("%s/cross/%s/login?client_id=%s&scope=%s"),
-        *LoginEndpointOAuth,
-        *PlatformProviderProject,
-        *Settings->ClientID,
-        *Scope);
+		*LoginEndpointOAuth,
+		*PlatformProviderProject,
+		*Settings->ClientID,
+		*Scope);
 
 	TSharedRef<IHttpRequest> HttpRequest = CreateHttpRequest(Url, EXsollaLoginRequestVerb::POST);
 	HttpRequest->SetHeader(TEXT("Content-Type"), TEXT("application/x-www-form-urlencoded"));
 	HttpRequest->SetContentAsString(EncodeFormData(RequestDataJson));
 	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UXsollaLoginSubsystem::AuthenticateViaProviderProject_HttpRequestComplete, SuccessCallback, ErrorCallback);
-	HttpRequest->ProcessRequest();	
+	HttpRequest->ProcessRequest();
 }
 
 void UXsollaLoginSubsystem::SetToken(const FString& Token)
@@ -424,13 +424,13 @@ void UXsollaLoginSubsystem::CheckUserAge(const FString& DateOfBirth, const FOnCh
 
 	RequestDataJson->SetStringField(TEXT("dob"), *DateOfBirth);
 	RequestDataJson->SetStringField(TEXT("project_id"), *LoginID);
-	
+
 	const FString Url = FString::Printf(TEXT("%s/age/check"), *UsersEndpoint);
 
 	FString PostContent;
 	const TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&PostContent);
 	FJsonSerializer::Serialize(RequestDataJson.ToSharedRef(), Writer);
-	
+
 	TSharedRef<IHttpRequest> HttpRequest = CreateHttpRequest(Url, EXsollaLoginRequestVerb::POST, PostContent);
 	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UXsollaLoginSubsystem::CheckUserAge_HttpRequestComplete, SuccessCallback, ErrorCallback);
 	HttpRequest->ProcessRequest();
@@ -470,7 +470,7 @@ void UXsollaLoginSubsystem::AuthViaAccessTokenOfSocialNetwork(
 	const FOnAuthUpdate& SuccessCallback, const FOnAuthError& ErrorCallback)
 {
 	const UXsollaLoginSettings* Settings = FXsollaLoginModule::Get().GetSettings();
-	
+
 	if (IOnlineSubsystem::IsEnabled(STEAM_SUBSYSTEM) && Settings->bUseSteamAuthorization)
 	{
 		UE_LOG(LogXsollaLogin, Error, TEXT("%s: User registration should be handled via Steam"), *VA_FUNC_LINE);
@@ -575,7 +575,7 @@ void UXsollaLoginSubsystem::ModifyUserProfilePicture(const FString& AuthToken, U
 		ErrorCallback.Execute("-1", "Picture is invalid.");
 		return;
 	}
-	
+
 	// Prepare picture upload request content
 	const FString Boundary = TEXT("---------------------------" + FString::FromInt(FDateTime::Now().GetTicks()));
 	const FString BeginBoundary = TEXT("\r\n--" + Boundary + "\r\n");
@@ -678,8 +678,8 @@ void UXsollaLoginSubsystem::UpdateUsersFriends(const FString& AuthToken, const F
 {
 	// Generate endpoint url
 	const FString Url = FString::Printf(TEXT("%s/social_friends/update%s"),
-        *UserDetailsEndpoint,
-        Platform.IsEmpty() ? TEXT("") : *FString::Printf(TEXT("?platform=%s"), *Platform));
+		*UserDetailsEndpoint,
+		Platform.IsEmpty() ? TEXT("") : *FString::Printf(TEXT("?platform=%s"), *Platform));
 	TSharedRef<IHttpRequest> HttpRequest = CreateHttpRequest(Url, EXsollaLoginRequestVerb::POST, TEXT(""), AuthToken);
 	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UXsollaLoginSubsystem::UpdateUsersFriends_HttpRequestComplete, SuccessCallback, ErrorCallback);
 	HttpRequest->ProcessRequest();
@@ -733,6 +733,86 @@ void UXsollaLoginSubsystem::UpdateLinkedSocialNetworks(const FString& AuthToken,
 	TSharedRef<IHttpRequest> HttpRequest = CreateHttpRequest(Url, EXsollaLoginRequestVerb::GET, TEXT(""), AuthToken);
 	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UXsollaLoginSubsystem::LinkedSocialNetworks_HttpRequestComplete, SuccessCallback, ErrorCallback);
 	HttpRequest->ProcessRequest();
+}
+
+template <class TBaseDynamicDelegate, class ResponseType>
+void UXsollaLoginSubsystem::TemplateHandler(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
+    TBaseDynamicDelegate SuccessCallback, FOnAuthError ErrorCallback)
+{
+	if (HandleRequestError(HttpRequest, HttpResponse, bSucceeded, ErrorCallback))
+	{
+		return;
+	}
+
+	const FString ResponseStr = HttpResponse->GetContentAsString();
+	UE_LOG(LogXsollaLogin, Verbose, TEXT("%s: Response: %s"), *VA_FUNC_LINE, *ResponseStr);
+
+	FString ErrorStr;
+
+	TSharedPtr<FJsonObject> JsonObject;
+	const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(*HttpResponse->GetContentAsString());
+	if (FJsonSerializer::Deserialize(Reader, JsonObject))
+	{
+		ResponseType Value;
+		if (FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), ResponseType::StaticStruct(), &Value))
+		{
+			SuccessCallback.ExecuteIfBound(Value);
+			return;
+		}
+
+		ErrorStr = FString::Printf(TEXT("Can't process response json"));
+	}
+	else
+	{
+		ErrorStr = FString::Printf(TEXT("Can't deserialize response json: %s"), *ResponseStr);
+	}
+
+	// No success before so call the error callback
+	ErrorCallback.ExecuteIfBound(TEXT("204"), ErrorStr);
+}
+
+template <class TBaseDynamicDelegate, class ResponseType>
+void UXsollaLoginSubsystem::TemplateHandler(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
+	TBaseDynamicDelegate SuccessCallback, FOnAuthError ErrorCallback, const TFunction<bool(TemplateHandlerExecuteParams)>& SuccessExecute)
+{
+	if (HandleRequestError(HttpRequest, HttpResponse, bSucceeded, ErrorCallback))
+	{
+		return;
+	}
+
+	const FString ResponseStr = HttpResponse->GetContentAsString();
+	UE_LOG(LogXsollaLogin, Verbose, TEXT("%s: Response: %s"), *VA_FUNC_LINE, *ResponseStr);
+
+	FString ErrorStr;
+
+	TSharedPtr<FJsonObject> JsonObject;
+	const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(*HttpResponse->GetContentAsString());
+	if (FJsonSerializer::Deserialize(Reader, JsonObject))
+	{
+		// ResponseType receivedUserSocialFriendsData;
+		// if (FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), ResponseType::StaticStruct(), &receivedUserSocialFriendsData))
+		// {
+		// 	SuccessHandler();
+		// 	SocialFriendsData = receivedUserSocialFriendsData;
+		//
+		// 	return;
+		// }
+
+		if (true)
+		{
+			// call SuccessCallback
+			SuccessExecute(JsonObject, ErrorStr, SuccessCallback);
+		}
+
+		ErrorStr = FString::Printf(TEXT("Can't process response json"));
+	}
+	else
+	{
+		ErrorStr = FString::Printf(TEXT("Can't deserialize response json: %s"), *ResponseStr);
+	}
+
+	// No success before so call the error callback
+	ErrorCallback.ExecuteIfBound(TEXT("204"), ErrorStr);
 }
 
 void UXsollaLoginSubsystem::RegisterUserJWT(const FString& Username, const FString& Password, const FString& Email,
@@ -913,18 +993,18 @@ void UXsollaLoginSubsystem::AuthViaAccessTokenOfSocialNetworkJWT(const FString& 
 	// Generate endpoint url
 	const UXsollaLoginSettings* Settings = FXsollaLoginModule::Get().GetSettings();
 	const FString Url = FString::Printf(TEXT("%s/%s/login_with_token?projectId=%s&payload=%s&with_logout=%s"),
-        *LoginSocialEndpoint,
-        *ProviderName,
-        *LoginID,
-        *Payload,
-        Settings->InvalidateExistingSessions ? TEXT("1") : TEXT("0"));
+		*LoginSocialEndpoint,
+		*ProviderName,
+		*LoginID,
+		*Payload,
+		Settings->InvalidateExistingSessions ? TEXT("1") : TEXT("0"));
 
 	// Prepare request payload
 	TSharedPtr<FJsonObject> RequestDataJson = MakeShareable(new FJsonObject());
 	RequestDataJson->SetStringField(TEXT("access_token"), *AuthToken);
 	if (ProviderName.Compare(TEXT("twitter")))
 	{
-		RequestDataJson->SetStringField(TEXT("access_token_secret"), *AuthTokenSecret);		
+		RequestDataJson->SetStringField(TEXT("access_token_secret"), *AuthTokenSecret);
 	}
 
 	FString PostContent;
@@ -945,18 +1025,18 @@ void UXsollaLoginSubsystem::AuthViaAccessTokenOfSocialNetworkOAuth(
 	// Generate endpoint url
 	const UXsollaLoginSettings* Settings = FXsollaLoginModule::Get().GetSettings();
 	const FString Url = FString::Printf(TEXT("%s/social/%s/login_with_token?client_id=%s&response_type=code&redirect_uri=%s&state=%s&scope=offline"),
-        *LoginEndpointOAuth,
-        *ProviderName,
-        *Settings->ClientID,
-        *BlankRedirectEndpoint,
-        *State);
+		*LoginEndpointOAuth,
+		*ProviderName,
+		*Settings->ClientID,
+		*BlankRedirectEndpoint,
+		*State);
 
 	// Prepare request payload
 	TSharedPtr<FJsonObject> RequestDataJson = MakeShareable(new FJsonObject());
 	RequestDataJson->SetStringField(TEXT("access_token"), *AuthToken);
 	if (ProviderName.Compare(TEXT("twitter")))
 	{
-		RequestDataJson->SetStringField(TEXT("access_token_secret"), *AuthTokenSecret);		
+		RequestDataJson->SetStringField(TEXT("access_token_secret"), *AuthTokenSecret);
 	}
 
 	FString PostContent;
@@ -1053,6 +1133,49 @@ void UXsollaLoginSubsystem::TokenVerify_HttpRequestComplete(FHttpRequestPtr Http
 void UXsollaLoginSubsystem::SocialAuthUrl_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
 	FOnSocialUrlReceived SuccessCallback, FOnAuthError ErrorCallback)
 {
+	/*
+	auto Handler = TFunction<void(TSharedPtr<FJsonObject> JsonObject, FString& ErrorStr, TBaseDelegate<void> Delegate)>([](TSharedPtr<FJsonObject> JsonObject, FString& ErrorStr, TBaseDelegate<void> Delegate) -> bool
+	           {
+	               static const FString SocialUrlFieldName = TEXT("url");
+	               if (JsonObject->HasTypedField<EJson::String>(SocialUrlFieldName))
+	               {
+	                   const FString SocialUrl = JsonObject.Get()->GetStringField(SocialUrlFieldName);
+	                   // SuccessCallback.ExecuteIfBound(SocialUrl);
+	                   Delegate.ExecuteIfBound();
+	                   return true;
+	               }
+	
+	               ErrorStr = FString::Printf(TEXT("Can't process response json: no field '%s' found"), *SocialUrlFieldName);
+	               return false;
+	           });
+
+	FunctionType TSharedPtr<FJsonObject> JsonObject, FString& ErrorStr, TBaseDelegate<void> Delegate
+
+	const TFunction<bool(FunctionType)> Handler = [](FunctionType) -> bool
+	{
+		Delegate.ExecuteIfBound();
+		return false;
+	};
+	*/
+
+	TemplateHandler<FOnSocialUrlReceived, FOnSocialUrlReceived>(HttpRequest, HttpResponse, bSucceeded,
+		SuccessCallback, ErrorCallback,
+		[](TemplateHandlerExecuteParams) -> bool
+		{
+			static const FString SocialUrlFieldName = TEXT("url");
+			if (JsonObject->HasTypedField<EJson::String>(SocialUrlFieldName))
+			{
+				const FString SocialUrl = JsonObject.Get()->GetStringField(SocialUrlFieldName);
+				// SuccessCallback.ExecuteIfBound(SocialUrl);
+				Delegate.ExecuteIfBound();
+				return true;
+			}
+
+			ErrorStr = FString::Printf(TEXT("Can't process response json: no field '%s' found"), *SocialUrlFieldName);
+			return false;
+		});
+
+	return;
 	if (HandleRequestError(HttpRequest, HttpResponse, bSucceeded, ErrorCallback))
 	{
 		return;
@@ -1221,8 +1344,12 @@ void UXsollaLoginSubsystem::AccountLinkingCode_HttpRequestComplete(FHttpRequestP
 }
 
 void UXsollaLoginSubsystem::CheckUserAge_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
-    FOnCheckUserAgeSuccess SuccessCallback, FOnAuthError ErrorCallback)
+	FOnCheckUserAgeSuccess SuccessCallback, FOnAuthError ErrorCallback)
 {
+	// After
+	TemplateHandler<FOnCheckUserAgeSuccess, FXsollaCheckUserAgeResult>(HttpRequest, HttpResponse, bSucceeded, SuccessCallback, ErrorCallback);
+
+	// Before
 	if (HandleRequestError(HttpRequest, HttpResponse, bSucceeded, ErrorCallback))
 	{
 		return;
@@ -1330,7 +1457,7 @@ void UXsollaLoginSubsystem::AuthenticateViaProviderProject_HttpRequestComplete(F
 			SuccessCallback.ExecuteIfBound(ProviderToken);
 			return;
 		}
-		
+
 		ErrorStr = FString::Printf(TEXT("Can't process response json"));
 	}
 	else
@@ -2077,8 +2204,7 @@ TSharedRef<IHttpRequest> UXsollaLoginSubsystem::CreateHttpRequest(const FString&
 
 	switch (Verb)
 	{
-	case EXsollaLoginRequestVerb::GET:
-		HttpRequest->SetVerb(TEXT("GET"));
+	case EXsollaLoginRequestVerb::GET: HttpRequest->SetVerb(TEXT("GET"));
 
 		// Check that we doen't provide content with GET request
 		if (!Content.IsEmpty())
@@ -2087,24 +2213,20 @@ TSharedRef<IHttpRequest> UXsollaLoginSubsystem::CreateHttpRequest(const FString&
 		}
 		break;
 
-	case EXsollaLoginRequestVerb::POST:
-		HttpRequest->SetVerb(TEXT("POST"));
+	case EXsollaLoginRequestVerb::POST: HttpRequest->SetVerb(TEXT("POST"));
 		break;
 
-	case EXsollaLoginRequestVerb::PUT:
-		HttpRequest->SetVerb(TEXT("PUT"));
+	case EXsollaLoginRequestVerb::PUT: HttpRequest->SetVerb(TEXT("PUT"));
 		break;
 
-	case EXsollaLoginRequestVerb::DELETE:
-		HttpRequest->SetVerb(TEXT("DELETE"));
+	case EXsollaLoginRequestVerb::DELETE: HttpRequest->SetVerb(TEXT("DELETE"));
 		break;
 
-	case EXsollaLoginRequestVerb::PATCH:
-		HttpRequest->SetVerb(TEXT("PATCH"));
+	case EXsollaLoginRequestVerb::PATCH: HttpRequest->SetVerb(TEXT("PATCH"));
 		break;
 
 	default:
-		unimplemented();
+	unimplemented();
 	}
 
 	if (!Content.IsEmpty())
@@ -2186,56 +2308,43 @@ FString UXsollaLoginSubsystem::GetTargetPlatformName(EXsollaTargetPlatform Platf
 
 	switch (Platform)
 	{
-	case EXsollaTargetPlatform::PlaystationNetwork:
-		platform = TEXT("playstation_network");
+	case EXsollaTargetPlatform::PlaystationNetwork: platform = TEXT("playstation_network");
 		break;
 
-	case EXsollaTargetPlatform::XboxLive:
-		platform = TEXT("xbox_live");
+	case EXsollaTargetPlatform::XboxLive: platform = TEXT("xbox_live");
 		break;
 
-	case EXsollaTargetPlatform::Xsolla:
-		platform = TEXT("xsolla");
+	case EXsollaTargetPlatform::Xsolla: platform = TEXT("xsolla");
 		break;
 
-	case EXsollaTargetPlatform::PcStandalone:
-		platform = TEXT("pc_standalone");
+	case EXsollaTargetPlatform::PcStandalone: platform = TEXT("pc_standalone");
 		break;
 
-	case EXsollaTargetPlatform::NintendoShop:
-		platform = TEXT("nintendo_shop");
+	case EXsollaTargetPlatform::NintendoShop: platform = TEXT("nintendo_shop");
 		break;
 
-	case EXsollaTargetPlatform::GooglePlay:
-		platform = TEXT("google_play");
+	case EXsollaTargetPlatform::GooglePlay: platform = TEXT("google_play");
 		break;
 
-	case EXsollaTargetPlatform::AppStoreIos:
-		platform = TEXT("app_store_ios");
+	case EXsollaTargetPlatform::AppStoreIos: platform = TEXT("app_store_ios");
 		break;
 
-	case EXsollaTargetPlatform::AndroidStandalone:
-		platform = TEXT("android_standalone");
+	case EXsollaTargetPlatform::AndroidStandalone: platform = TEXT("android_standalone");
 		break;
 
-	case EXsollaTargetPlatform::IosStandalone:
-		platform = TEXT("ios_standalone");
+	case EXsollaTargetPlatform::IosStandalone: platform = TEXT("ios_standalone");
 		break;
 
-	case EXsollaTargetPlatform::AndroidOther:
-		platform = TEXT("android_other");
+	case EXsollaTargetPlatform::AndroidOther: platform = TEXT("android_other");
 		break;
 
-	case EXsollaTargetPlatform::IosOther:
-		platform = TEXT("ios_other");
+	case EXsollaTargetPlatform::IosOther: platform = TEXT("ios_other");
 		break;
 
-	case EXsollaTargetPlatform::PcOther:
-		platform = TEXT("pc_other");
+	case EXsollaTargetPlatform::PcOther: platform = TEXT("pc_other");
 		break;
 
-	default:
-		platform = TEXT("");
+	default: platform = TEXT("");
 	}
 
 	return platform;
@@ -2388,7 +2497,8 @@ FXsollaSocialFriendsData UXsollaLoginSubsystem::GetSocialFriends() const
 
 TArray<FXsollaSocialFriend> UXsollaLoginSubsystem::GetSocialProfiles(const FString& UserID) const
 {
-	auto SocialProfiles = SocialFriendsData.data.FilterByPredicate([UserID](const FXsollaSocialFriend& InSocialProfile) {
+	auto SocialProfiles = SocialFriendsData.data.FilterByPredicate([UserID](const FXsollaSocialFriend& InSocialProfile)
+	{
 		return InSocialProfile.xl_uid == UserID;
 	});
 
@@ -2402,7 +2512,8 @@ TArray<FXsollaLinkedSocialNetworkData> UXsollaLoginSubsystem::GetLinkedSocialNet
 
 bool UXsollaLoginSubsystem::IsSocialNetworkLinked(const FString& Provider) const
 {
-	auto SocialNetwork = LinkedSocialNetworks.FindByPredicate([Provider](const FXsollaLinkedSocialNetworkData& InSocialNetwork) {
+	auto SocialNetwork = LinkedSocialNetworks.FindByPredicate([Provider](const FXsollaLinkedSocialNetworkData& InSocialNetwork)
+	{
 		return InSocialNetwork.provider == Provider;
 	});
 

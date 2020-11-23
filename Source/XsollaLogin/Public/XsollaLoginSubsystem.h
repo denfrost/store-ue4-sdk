@@ -29,16 +29,28 @@ class FJsonObject;
 DECLARE_DYNAMIC_DELEGATE(FOnRequestSuccess);
 
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnAuthUpdate, const FXsollaLoginData&, LoginData);
+
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnSocialUrlReceived, const FString&, Url);
+
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnSocialAccountLinkingHtmlReceived, const FString&, Content);
+
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnAuthError, const FString&, Code, const FString&, Description);
+
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnCodeReceived, const FString&, Code);
+
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnUserFriendsUpdate, const FXsollaFriendsData&, FriendsData, EXsollaFriendsType, type);
+
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnUserSocialFriendsUpdate, const FXsollaSocialFriendsData&, SocialFriendsData);
+
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnUserProfileReceived, const FXsollaPublicProfile&, UserProfile);
+
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnUserSearchUpdate, const FXsollaUserSearchResult&, SearchResult);
+
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnCheckUserAgeSuccess, const FXsollaCheckUserAgeResult&, CheckUserAgeResult);
+
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnAuthenticateViaProviderProjectSuccess, const FXsollaProviderToken&, ProviderToken);
+
+#define TemplateHandlerExecuteParams TSharedPtr<FJsonObject> JsonObject, FString& ErrorStr, TBaseDelegate<void> Delegate
 
 UCLASS()
 class XSOLLALOGIN_API UXsollaLoginSubsystem : public UGameInstanceSubsystem
@@ -280,7 +292,7 @@ public:
 	* @param ErrorCallback Callback function called after the request resulted with an error.
 	*/
 	UFUNCTION(BlueprintCallable, Category = "Xsolla|Login", meta = (AutoCreateRefTerm = "SuccessCallback, ErrorCallback"))
-    void AuthViaAccessTokenOfSocialNetwork(const FString& AuthToken, const FString& AuthTokenSecret,
+	void AuthViaAccessTokenOfSocialNetwork(const FString& AuthToken, const FString& AuthTokenSecret,
 		const FString& ProviderName, const FString& Payload, const FString& State,
 		const FOnAuthUpdate& SuccessCallback, const FOnAuthError& ErrorCallback);
 
@@ -482,6 +494,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Xsolla|Login", meta = (AutoCreateRefTerm = "SuccessCallback, ErrorCallback"))
 	void UpdateLinkedSocialNetworks(const FString& AuthToken, const FOnRequestSuccess& SuccessCallback, const FOnAuthError& ErrorCallback);
 
+	// TSharedPtr<FJsonObject> JsonObject, FString& ErrorStr, TBaseDelegate<void> Delegate
+	template <class TBaseDynamicDelegate, class ResponseType>
+	void TemplateHandler(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
+		TBaseDynamicDelegate SuccessCallback, FOnAuthError ErrorCallback);
+
+	template <class TBaseDynamicDelegate, class ResponseType>
+	void TemplateHandler(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
+		TBaseDynamicDelegate SuccessCallback, FOnAuthError ErrorCallback, const TFunction<bool(TemplateHandlerExecuteParams)>& SuccessExecute);
+
 protected:
 	void RegisterUserJWT(const FString& Username, const FString& Password, const FString& Email,
 		const FOnRequestSuccess& SuccessCallback, const FOnAuthError& ErrorCallback);
@@ -523,19 +544,19 @@ protected:
 	void AccountLinkingCode_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
 		FOnCodeReceived SuccessCallback, FOnAuthError ErrorCallback);
 	void CheckUserAge_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
-        FOnCheckUserAgeSuccess SuccessCallback, FOnAuthError ErrorCallback);
+		FOnCheckUserAgeSuccess SuccessCallback, FOnAuthError ErrorCallback);
 	void AuthConsoleAccountUser_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
 		FOnAuthUpdate SuccessCallback, FOnAuthError ErrorCallback);
 	void AuthenticateViaProviderProject_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
-        FOnAuthenticateViaProviderProjectSuccess SuccessCallback, FOnAuthError ErrorCallback);
+		FOnAuthenticateViaProviderProjectSuccess SuccessCallback, FOnAuthError ErrorCallback);
 	void RefreshTokenOAuth_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
 		FOnAuthUpdate SuccessCallback, FOnAuthError ErrorCallback);
 	void SessionTicketOAuth_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
 		FOnAuthUpdate SuccessCallback, FOnAuthError ErrorCallback);
 	void AuthViaAccessTokenOfSocialNetworkJWT_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
-        FOnAuthUpdate SuccessCallback, FOnAuthError ErrorCallback);
+		FOnAuthUpdate SuccessCallback, FOnAuthError ErrorCallback);
 	void AuthViaAccessTokenOfSocialNetworkOAuth_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
-        FOnAuthUpdate SuccessCallback, FOnAuthError ErrorCallback);
+		FOnAuthUpdate SuccessCallback, FOnAuthError ErrorCallback);
 	void UserDetails_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
 		FOnRequestSuccess SuccessCallback, FOnAuthError ErrorCallback);
 	void UserEmail_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
@@ -557,7 +578,7 @@ protected:
 	void SocialFriends_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
 		FOnUserSocialFriendsUpdate SuccessCallback, FOnAuthError ErrorCallback);
 	void UpdateUsersFriends_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
-        FOnCodeReceived SuccessCallback, FOnAuthError ErrorCallback);
+		FOnCodeReceived SuccessCallback, FOnAuthError ErrorCallback);
 	void UserProfile_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
 		FOnUserProfileReceived SuccessCallback, FOnAuthError ErrorCallback);
 	void UserSearch_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
