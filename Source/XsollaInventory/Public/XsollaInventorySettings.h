@@ -22,7 +22,7 @@ public:
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, DisplayName = "Use Cross-Platform Account Linking", Category = "Xsolla Inventory Settings")
 	bool UseCrossPlatformAccountLinking;
 
-	/** Target platform for cross-platform account linking. If using Xsolla Login, make sure that in the Login settings the same platform is chosen. */
+	/** Target platform for cross-platform account linking. If you use Xsolla Login, make sure that in the Login settings the same platform is chosen. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Xsolla Inventory Settings", meta = (EditCondition = "UseCrossPlatformAccountLinking"))
 	EXsollaPublishingPlatform Platform;
 
@@ -30,7 +30,7 @@ public:
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Xsolla Inventory Demo")
 	FString WebStoreURL;
 
-	/** Demo Project ID */
+	/** Demo Project ID. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Xsolla Inventory Demo")
 	FString DemoProjectID;
 };
