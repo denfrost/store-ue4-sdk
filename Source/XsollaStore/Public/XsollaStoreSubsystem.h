@@ -71,7 +71,7 @@ public:
 	void UpdateVirtualItems(const FOnStoreUpdate& SuccessCallback, const FOnStoreError& ErrorCallback);
 
 	/** Update Item Groups
-	 * Updates the list of virtual item groups (cached locally).
+	 * Updates the list of virtual items groups (cached locally).
 	 *
 	 * @param Locale (optional) Response language (e.g. item name, item description). Two-letter lowercase language code per ISO 639-1. Leave empty to use the default value.
 	 * @param SuccessCallback Callback function called after local cache of virtual item groups was successfully updated.
@@ -100,13 +100,13 @@ public:
 	void UpdateVirtualCurrencyPackages(const FOnStoreUpdate& SuccessCallback, const FOnStoreError& ErrorCallback);
 
 	/** Get Items List By Specified Group
-	 * Gets an items list from the specified group for building a catalog.
+	 * Gets the list of items from the specified group for building a catalog.
 	 *
 	 * @param ExternalId Group external ID.
 	 * @param Limit Limit for the number of elements on the page.
 	 * @param Offset Number of the element from which the list is generated (the count start from 0).
 	 * @param Locale Response language. Two-letter lowercase language code per ISO 639-1.
-	 * @param AdditionalFields The list of additional fields. This fields will be in a response if you send it in a request. Available fields 'media_list', 'purchase_limit', 'promotion', 'order', and 'long_description'.
+	 * @param AdditionalFields The list of additional fields. These fields will be in a response if you send them in a request. Available fields 'media_list', 'purchase_limit', 'promotion', 'order', and 'long_description'.
 	 * @param SuccessCallback Callback function called after server response.
 	 * @param ErrorCallback Callback function called after the request resulted with an error.
 	 */
@@ -116,7 +116,7 @@ public:
 		const FOnGetItemsListBySpecifiedGroup& SuccessCallback, const FOnStoreError& ErrorCallback);
 
 	/** Fetch Payment Token
-	 * Initiates an item purchase session and fetches token for payment console.
+	 * Initiates an item purchase session and fetches a token for the payment console.
 	 *
 	 * @param AuthToken User authorization token.
 	 * @param ItemSKU Desired item SKU.
@@ -152,7 +152,7 @@ public:
 		const FOnFetchTokenSuccess& SuccessCallback, const FOnStoreError& ErrorCallback);
 
 	/** Launch Payment Console
-	 * Opens payment console for the provided access token.
+	 * Opens a payment console for the provided access token.
 	 *
 	 * @param AccessToken Payment token used during purchase processing.
 	 * @param BrowserWidget Widget to represent a payment form. Can be set in the project settings.
@@ -188,7 +188,7 @@ public:
 	 * Updates cart content (cached locally).
 	 *
 	 * @param AuthToken User authorization token.
-	 * @param CartId (optional) Identifier of cart to be updated. The current user cart will be updated if empty.
+	 * @param CartId (optional) Identifier of a cart to be updated. The current user cart will be updated if empty.
 	 * @param SuccessCallback Callback function called after local cache of cart items was successfully updated.
 	 * @param ErrorCallback Callback function called after the request resulted with an error.
 	 */
@@ -200,7 +200,7 @@ public:
 	 * Adds an item to the cart and changes its quantity.
 	 *
 	 * @param AuthToken User authorization token.
-	 * @param CartId (optional) Identifier of a cart to which item will be added. The current user cart will be modified if empty.
+	 * @param CartId (optional) Identifier of a cart to which the item will be added. The current user cart will be modified if empty.
 	 * @param ItemSKU Desired item SKU.
 	 * @param Quantity Amount of items to be added to a cart.
 	 * @param SuccessCallback Callback function called after adding a new item to the cart successfully.
@@ -227,9 +227,9 @@ public:
 	 * Fills the specific cart with items. If the cart already has an item, the existing item position will be replaced by the given value.
 	 *
 	 * @param AuthToken User authorization token.
-	 * @param CartId (optional) Identifier of cart which will fill. The current user cart will be filled if empty.
-	 * @param Items Item for fill cart.
-	 * @param SuccessCallback Callback function called after cart filled successfully.
+	 * @param CartId (optional) Identifier of a cart which will fill. The current user cart will be filled if empty.
+	 * @param Items Item for filling the cart.
+	 * @param SuccessCallback Callback function called after the cart is filled successfully.
 	 * @param ErrorCallback Callback function called after the request resulted with an error.
 	*/
 	UFUNCTION(BlueprintCallable, Category = "Xsolla|Store|Cart", meta = (AutoCreateRefTerm = "SuccessCallback, ErrorCallback"))
@@ -250,7 +250,7 @@ public:
 	/** Update Bundles
 	* Gets a list of bundles for building a catalog.
 	*
-	* @param Locale Response language. Tow-letter lowercase language code per ISO 639-1.
+	* @param Locale Response language. Two-letter lowercase language code per ISO 639-1.
 	* @param SuccessCallback Callback function called after cart is successfully filled .
 	* @param ErrorCallback Callback function called after the request resulted with an error.
 	*/
@@ -259,9 +259,9 @@ public:
 		const FOnGetListOfBundlesUpdate& SuccessCallback, const FOnStoreError& ErrorCallback);
 
 	/** Get Virtual Currency
-	 * Gets virtual currency with specified SKU.
+	 * Gets virtual currency with the specified SKU.
 	 *
-	 * @param CurrencySKU Desired currency SKU
+	 * @param CurrencySKU Desired currency SKU.
 	 * @param SuccessCallback Callback function called after successful request of specified virtual currency data.
 	 * @param ErrorCallback Callback function called after the request resulted with an error.
 	 */
@@ -285,7 +285,7 @@ public:
 	 * 
 	 * @param AuthToken User authorization token.
 	 * @param ItemSKU Desired item SKU.
-	 * @param CurrencySKU Currency to buy virtual items with.
+	 * @param CurrencySKU Currency to buy virtual items for.
 	 * @param SuccessCallback Callback function called after the successful item purchase.
 	 * @param ErrorCallback Callback function called after the request resulted with an error.
 	 */
@@ -310,8 +310,8 @@ public:
 	* Redeems a promo code. After redeeming a promo code, the user will get free items and/or the price of cart will be decreased.
 	* 
 	* @param AuthToken User authorization token.
-	* @param PromocodeCode Uniques case sensitive code. Contains letters and numbers.
-	* @param SuccessCallback Callback function called after successful promocode redemption.
+	* @param PromocodeCode Unique case sensitive code. Contains letters and numbers.
+	* @param SuccessCallback Callback function called after successful promo code redemption.
 	* @param ErrorCallback Callback function called after the request resulted with an error.
 	*/
 	UFUNCTION(BlueprintCallable, Category = "Xsolla|Store|Promocode", meta = (AutoCreateRefTerm = "SuccessCallback, ErrorCallback"))
@@ -366,50 +366,50 @@ protected:
 	void RedeemPromocode_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse,
 		bool bSucceeded, FOnRedeemPromocodeUpdate SuccessCallback, FOnStoreError ErrorCallback);
 
-	/** Return true if error is happened */
+	/** Returns true if error occurs */
 	bool HandleRequestError(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse,
 		bool bSucceeded, FOnStoreError ErrorCallback);
 
 protected:
-	/** Load save game and extract data */
+	/** Loads save game and extracts data. */
 	void LoadData();
 
-	/** Save cached data or reset one if necessary */
+	/** Saves cached data or resets one if necessary. */
 	void SaveData();
 
-	/** Check whether sandbox is enabled */
+	/** Checks whether the sandbox mode is enabled. */
 	bool IsSandboxEnabled() const;
 
 private:
-	/** Create http request and add Xsolla API meta */
+	/** Creates an HTTP request and adds Xsolla API meta. */
 	TSharedRef<IHttpRequest> CreateHttpRequest(const FString& Url, const EXsollaRequestVerb Verb = EXsollaRequestVerb::GET,
 		const FString& AuthToken = FString(), const FString& Content = FString());
 
-	/** Serialize json object into string */
+	/** Serializes a json object into string. */
 	FString SerializeJson(const TSharedPtr<FJsonObject> DataJson) const;
 
-	/** Parse JWT token and get its payload as json object */
+	/** Parses a JWT token and gets its payload as a json object. */
 	bool ParseTokenPayload(const FString& Token, TSharedPtr<FJsonObject>& PayloadJsonObject) const;
 
-	/** Try to execute next request in queue */
+	/** Tries to execute the next request in a queue. */
 	void ProcessNextCartRequest();
 
-	/** Get name of publishing platform */
+	/** Gets the name of a publishing platform. */
 	FString GetPublishingPlatformName();
 
-	/** Queue to store cart change requests */
+	/** Queue to store cart change requests. */
 	TArray<TSharedRef<IHttpRequest>> CartRequestsQueue;
 
 public:
 	/** Get Virtual Items
-	 * Gets the list of cached virtual items filtered by category.
+	 * Gets the list of cached virtual items filtered by a category.
 	 *
 	 * @param GroupFilter Group for which items should be received.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Xsolla|Store")
 	TArray<FStoreItem> GetVirtualItems(const FString& GroupFilter) const;
 
-	/** Gets the list of cached virtual items without any Category provided. */
+	/** Gets the list of cached virtual items without any category provided. */
 	UFUNCTION(BlueprintCallable, Category = "Xsolla|Store")
 	TArray<FStoreItem> GetVirtualItemsWithoutGroup() const;
 
@@ -425,11 +425,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Xsolla|Store|VirtualCurrency")
 	TArray<FVirtualCurrencyPackage> GetVirtualCurrencyPackages() const;
 
-	/** Gets cached cart data */
+	/** Gets cached cart data. */
 	UFUNCTION(BlueprintCallable, Category = "Xsolla|Store|Cart")
 	FStoreCart GetCart() const;
 	
-	/** Gets the pending PayStation URL to be opened in browser. */
+	/** Gets the pending PayStation URL to be opened in the browser. */
 	UFUNCTION(BlueprintCallable, Category = "Xsolla|Store")
 	FString GetPendingPaystationUrl() const;
 
@@ -451,37 +451,37 @@ public:
 	FOnCartUpdate OnCartUpdate;
 
 protected:
-	/** Cached Xsolla Store project id */
+	/** Cached Xsolla Store project ID. */
 	FString ProjectID;
 
-	/** Cached virtual items list */
+	/** Cached virtual items list. */
 	FStoreItemsData ItemsData;
 
-	/** Current cart */
+	/** Current cart. */
 	FStoreCart Cart;
 
-	/** Cached list of virtual currencies */
+	/** Cached list of virtual currencies. */
 	FVirtualCurrencyData VirtualCurrencyData;
 
-	/** Cached virtual currency packages */
+	/** Cached virtual currency packages. */
 	FVirtualCurrencyPackagesData VirtualCurrencyPackages;
 
-	/** Cached cart desired currency (used for silent cart update) */
+	/** Cached cart desired currency (used for silent cart update). */
 	FString CachedCartCurrency;
 
-	/** Cached auth token (used for silent cart update) */
+	/** Cached auth token (used for silent cart update). */
 	FString CachedAuthToken;
 
-	/** Cached cart identifier (used for silent cart update) */
+	/** Cached cart identifier (used for silent cart update). */
 	FString CachedCartId;
 
-	/** Pending paystation url to be opened in browser */
+	/** Pending Pay Station URL to be opened in the browser. */
 	FString PengindPaystationUrl;
 
 private:
 	UPROPERTY()
 	TSubclassOf<UUserWidget> DefaultBrowserWidgetClass;
 
-	/** Patching JsonObject with CustomParameters */
+	/** Patching JsonObject with CustomParameters. */
 	static void AddCustomParameters(TSharedPtr<FJsonObject> JsonObject, FXsollaPaymentCustomParameters CustomParameters);
 };
