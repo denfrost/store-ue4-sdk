@@ -43,9 +43,9 @@ public:
 	// End USubsystem
 
 	/** 
-	 * Initialize the controller with provided Project ID (use to override project settings)
+	 * Initialize the controller with provided Project ID (use to override project settings).
 	 *
-	 * @param InProjectId New Project ID value form Publisher Account Project settings > Project ID.
+	 * @param InProjectId New Project ID value form Publisher Account > Project settings > Project ID.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Xsolla|Inventory")
 	void Initialize(const FString& InProjectId);
@@ -98,7 +98,7 @@ public:
 		const FOnInventoryUpdate& SuccessCallback, const FOnInventoryError& ErrorCallback);
 
 	/** Get Coupon Rewards
-	 * Gets coupons rewards by its code. Can be used to allow users to choose one of many items as a bonus.
+	 * Gets coupons rewards by its code. Can be used to allow users to choose one of several items as a bonus.
 	 * The usual case is choosing a DRM if the coupon contains a game as a bonus.
 	 * 
 	 * @param AuthToken User authorization token.
@@ -114,8 +114,8 @@ public:
 	 * Redeems a coupon code. The user gets a bonus after a coupon is redeemed.
 	 * 
 	 * @param AuthToken User authorization token.
-	 * @param CouponCode Uniques case sensitive code. Contains letters and numbers.
-	 * @param SuccessCallback Callback function called after successful coupon redeem.
+	 * @param CouponCode Unique case sensitive code. Contains letters and numbers.
+	 * @param SuccessCallback Callback function called after successful coupon redemption.
 	 * @param ErrorCallback Callback function called after the request resulted with an error.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Xsolla|Inventory|Coupons", meta = (AutoCreateRefTerm = "SuccessCallback, ErrorCallback"))
@@ -133,7 +133,7 @@ protected:
 	void ConsumeInventoryItem_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse,
 		bool bSucceeded, FOnInventoryUpdate SuccessCallback, FOnInventoryError ErrorCallback);
 
-	/** Return true if error is happened */
+	/** Returns true if the error occurs. */
 	bool HandleRequestError(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse,
 		bool bSucceeded, FOnInventoryError ErrorCallback);
 
@@ -143,47 +143,47 @@ protected:
 		bool bSucceeded, FOnCouponRedeemUpdate SuccessCallback, FOnInventoryError ErrorCallback);
 
 private:
-	/** Create http request and add Xsolla API meta */
+	/** Creates an HTTPS request and adds Xsolla API meta. */
 	TSharedRef<IHttpRequest> CreateHttpRequest(const FString& Url, const EXsollaInventoryRequestVerb Verb = EXsollaInventoryRequestVerb::GET,
 		const FString& AuthToken = FString(), const FString& Content = FString());
 
-	/** Serialize json object into string */
+	/** Serializes json object into string. */
 	FString SerializeJson(const TSharedPtr<FJsonObject> DataJson) const;
 
-	/** Get name of publishing platform */
+	/** Gets the name of publishing platform. */
 	FString GetPublishingPlatformName();
 
 public:
-	/** Gets cached inventory data */
+	/** Gets cached inventory data. */
 	UFUNCTION(BlueprintCallable, Category = "Xsolla|Inventory")
 	FInventoryItemsData GetInventory() const;
 
-	/** Gets cached virtual currencies balance */
+	/** Gets cached virtual currencies balance. */
 	UFUNCTION(BlueprintCallable, Category = "Xsolla|Inventory|VirtualCurrency")
 	TArray<FVirtualCurrencyBalance> GetVirtualCurrencyBalance() const;
 
-	/** Gets cached user subscriptions */
+	/** Gets cached user subscriptions. */
 	UFUNCTION(BlueprintCallable, Category = "Xsolla|Inventory|Subscriptions")
 	TArray<FSubscriptionItem> GetSubscriptions() const;
 
-	/** Gets name of the cached item with given SKU */
+	/** Gets name of the cached item with the given SKU. */
 	UFUNCTION(BlueprintCallable, Category = "Xsolla|Inventory")
 	FString GetItemName(const FString& ItemSKU) const;
 
-	/** Checks if certain item is in the inventory */
+	/** Checks if the certain item is in the inventory. */
 	UFUNCTION(BlueprintCallable, Category = "Xsolla|Inventory")
 	bool IsItemInInventory(const FString& ItemSKU) const;
 
 protected:
-	/** Cached Xsolla Store project id */
+	/** Cached Xsolla Store project ID. */
 	FString ProjectID;
 
-	/** User inventory */
+	/** User inventory. */
 	FInventoryItemsData Inventory;
 
-	/** Cached virtual currency balance */
+	/** Cached virtual currency balance. */
 	FVirtualCurrencyBalanceData VirtualCurrencyBalance;
 
-	/** Cached user subscriptions */
+	/** Cached user subscriptions. */
 	FSubscriptionData Subscriptions;
 };
