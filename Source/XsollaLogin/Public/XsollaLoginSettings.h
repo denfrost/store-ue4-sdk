@@ -9,18 +9,18 @@
 
 #include "XsollaLoginSettings.generated.h"
 
-/** You can store user data at Xsolla's side, which is the default option, or in your own storage. */
+/** You can store user data on the Xsolla side, which is the default option, or in your own storage. */
 UENUM(BlueprintType)
 enum class EUserDataStorage : uint8
 {
-	/** User data is stored at Xsolla's side */
+	/** User data is stored on the Xsolla side. */
 	Xsolla UMETA(DisplayName = "Xsolla storage"),
 
 	/** If the user data is stored on your side, proxy requests are used. */
 	Custom UMETA(DisplayName = "Custom storage"),
 };
 
-/** Target platform name */
+/** Target platform name. */
 UENUM(BlueprintType)
 enum class EXsollaTargetPlatform : uint8
 {
@@ -53,34 +53,34 @@ public:
 	FString LoginID;
 
 	/**
-	 * URL to redirect the user to after registration/authentication/password reset.
+	 * URL to redirect the user to after registration, authentication, or password reset.
 	 * Must be identical to a Callback URL specified in Publisher Account in Login settings.
 	 * Required if there are several Callback URLs.
 	 */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Xsolla Login Settings", meta = (EditCondition = "!bCustomAuthViaAccessToken"))
 	FString CallbackURL;
 
-	/** API methods will be calling different URLs depending on the selected storage method. */
+	/** API methods will call different URLs depending on the selected storage method. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Xsolla Login Settings", meta = (EditCondition = "!bCustomAuthViaAccessToken"))
 	EUserDataStorage UserDataStorage;
 
-	/** Custom class to handle authentication via social network. */
+	/** Custom class to handle authentication via a social network. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Xsolla Login Settings", meta = (EditCondition = "!bCustomAuthViaAccessToken"))
 	TSubclassOf<UUserWidget> OverrideBrowserWidgetClass;
 
-	/** If enabled, Login SDK will deactivate the existing user JWT values and activate the one generated during last successful authentication. */
+	/** If enabled, the Login SDK will deactivate the existing user JWT values and activate the one generated during the last successful authentication. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, DisplayName = "Invalidate Existing Sessions", Category = "Xsolla Login Settings", meta = (EditCondition = "!bCustomAuthViaAccessToken"))
 	bool InvalidateExistingSessions;
 
-	/** If enabled, Login SDK will use OAuth 2.0 protocol in order to authorize user. */
+	/** If enabled, the Login SDK will use OAuth 2.0 protocol in order to authorize the user. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, DisplayName = "Use OAuth2", Category = "Xsolla Login Settings", meta = (EditCondition = "!bCustomAuthViaAccessToken"))
 	bool UseOAuth2;
 
-	/** Your application ID. You will get it after sending request to enable the OAuth 2.0 protocol. */
+	/** Your application ID. You will get it after sending a request to enable the OAuth 2.0 protocol. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Xsolla Login Settings", meta = (EditCondition = "UseOAuth2 && !bCustomAuthViaAccessToken"))
 	FString ClientID;
 
-	/** If enabled, Login SDK will imitate platform-specific authentication so you can try account linking from different platforms. */
+	/** If enabled, the Login SDK will imitate platform-specific authentication so you can try account linking from different platforms. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, DisplayName = "Use Cross-Platform Account Linking", Category = "Xsolla Login Settings", meta = (EditCondition = "!bCustomAuthViaAccessToken"))
 	bool UseCrossPlatformAccountLinking;
 
@@ -105,35 +105,35 @@ public:
 		meta = (EditCondition = "UseCrossPlatformAccountLinking && Platform != EXsollaTargetPlatform::Xsolla && !bCustomAuthViaAccessToken"))
 	FString PlatformAccountID;
 
-	/** Flag indicating whether Xsolla cached credentials should be encrypted and decrypted using the XsollaSaveEncryptionKey secondary encryption key */
+	/** Flag indicating whether Xsolla cached credentials should be encrypted and decrypted using the XsollaSaveEncryptionKey secondary encryption key. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Xsolla Login Settings", meta = (EditCondition = "!bCustomAuthViaAccessToken"))
 	bool EncryptCachedCredentials;
 
-	/** AES-256 encryption key used for cached credentials encryption */
+	/** AES-256 encryption key used for cached credentials encryption. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Xsolla Login Settings", meta = (EditCondition = "EncryptCachedCredentials && !bCustomAuthViaAccessToken"))
 	FString XsollaSaveEncryptionKey;
 
-	/** Demo Project ID */
+	/** Demo Project ID. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Xsolla Login Demo", meta = (EditCondition = "!bCustomAuthViaAccessToken"))
 	FString DemoProjectID;
 
-	/** Demo Login ID */
+	/** Demo Login ID. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Xsolla Login Demo", meta = (EditCondition = "!bCustomAuthViaAccessToken"))
 	FString DemoLoginID;
 
-	/** Request user nickname after successful authorization in case one is missing */
+	/** Request user nickname after successful authorization in case one is missing. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Xsolla Login Demo", meta = (EditCondition = "!bCustomAuthViaAccessToken"))
 	bool RequestNickname;
 
-	/** If enabled, Login SDK will use Steam as default authorization mechanism */
+	/** If enabled, the Login SDK will use Steam as default authorization mechanism. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Xsolla Login Demo", meta = (EditCondition = "!bCustomAuthViaAccessToken"))
 	bool bUseSteamAuthorization;
 
-	/** If enabled, Inventory SDK will user auth via access token */ 
+	/** If enabled, the Inventory SDK will use auth via the access token. */ 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Xsolla Login Custom Auth")
 	bool bCustomAuthViaAccessToken;
 
-	/** URL for login via access token */
+	/** URL for auth via the access token.  */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Xsolla Login Custom Auth", meta = (EditCondition = "bCustomAuthViaAccessToken"))
 	FString CustomAuthServerURL;
 };
