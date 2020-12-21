@@ -15,13 +15,17 @@ class XSOLLAUTILS_API UXsollaUtilsLibrary : public UBlueprintFunctionLibrary
 	GENERATED_UCLASS_BODY()
 
 public:
-	/** Direct access to image loader object */
+	/** Direct access to the image loader object. */
 	UFUNCTION(BlueprintPure, Category = "Xsolla|Utils")
 	static UXsollaUtilsImageLoader* GetImageLoader();
 
-	/** Make FDateTime structure based on a given timestamp */
+	/** Make FDateTime structure based on a given timestamp. */
 	UFUNCTION(BlueprintPure, Category = "Xsolla|Utils")
 	static FDateTime MakeDateTimeFromTimestamp(int64 Time);
+
+	/** Get seconds from DateTime to UnixTimestamp. */
+	UFUNCTION(BlueprintPure, Category = "Xsolla|Utils")
+	static int64 GetSecondsFromUnixTimestamp(FDateTime DateTime);
 
 	template <typename TEnum>
 	static FString GetEnumValueAsString(const FString& EnumName, TEnum Value)
