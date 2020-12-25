@@ -506,14 +506,33 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Xsolla|Login", meta = (AutoCreateRefTerm = "SuccessCallback, ErrorCallback"))
 	void UpdateLinkedSocialNetworks(const FString& AuthToken, const FOnRequestSuccess& SuccessCallback, const FOnAuthError& ErrorCallback);
 
-	// TSharedPtr<FJsonObject> JsonObject, FString& ErrorStr, TBaseDelegate<void> Delegate
+	/** TemplateHandler
+	 * TemplateHandler with handling error, parsing data to ResponseType and calling SuccessCallback
+	 */
 	template <class TBaseDynamicDelegate, class ResponseType>
 	void TemplateHandler(const FHttpRequestPtr HttpRequest, const FHttpResponsePtr HttpResponse, const bool bSucceeded,
 		TBaseDynamicDelegate SuccessCallback, const FOnAuthError ErrorCallback);
 
+	/** TemplateHandler
+	 * TemplateHandler with handling error, parsing data to ResponseType. If SuccessExecute failed then ErrorCallback will called
+	 */
 	template <class TBaseDynamicDelegate, class ResponseType>
 	void TemplateHandler(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
 		TBaseDynamicDelegate SuccessCallback, FOnAuthError ErrorCallback, const TFunction<bool(TSharedPtr<FJsonObject> JsonObject, FString& ErrorStr, TBaseDynamicDelegate Delegate)>& SuccessExecute);
+
+	/** TemplateHandlerCustomParse
+	 * TemplateHandler with handling error, if SuccessExecute failed then ErrorCallback will called
+	 */
+	template <class TBaseDynamicDelegate>
+    void TemplateHandlerCustomParse(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
+        TBaseDynamicDelegate SuccessCallback, FOnAuthError ErrorCallback, const TFunction<bool(FString& ErrorStr, TBaseDynamicDelegate Delegate)>& SuccessExecute);
+
+	/** TemplateHandlerWithJsonParsed
+	 * TemplateHandler with handling error and parsing data to JsonObject parameter of SuccessExecute
+	 */
+	template <class TBaseDynamicDelegate>
+    void TemplateHandlerWithJsonParsed(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
+        TBaseDynamicDelegate SuccessCallback, FOnAuthError ErrorCallback, const TFunction<bool(TSharedPtr<FJsonObject> JsonObject, FString& ErrorStr, TBaseDynamicDelegate Delegate)>& SuccessExecute);
 
 protected:
 	void RegisterUserJWT(const FString& Username, const FString& Password, const FString& Email,
