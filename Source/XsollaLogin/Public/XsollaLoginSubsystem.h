@@ -508,12 +508,12 @@ public:
 
 	// TSharedPtr<FJsonObject> JsonObject, FString& ErrorStr, TBaseDelegate<void> Delegate
 	template <class TBaseDynamicDelegate, class ResponseType>
-	void TemplateHandler(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
-		TBaseDynamicDelegate SuccessCallback, FOnAuthError ErrorCallback);
+	void TemplateHandler(const FHttpRequestPtr HttpRequest, const FHttpResponsePtr HttpResponse, const bool bSucceeded,
+		TBaseDynamicDelegate SuccessCallback, const FOnAuthError ErrorCallback);
 
 	template <class TBaseDynamicDelegate, class ResponseType>
 	void TemplateHandler(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
-		TBaseDynamicDelegate SuccessCallback, FOnAuthError ErrorCallback, const TFunction<bool(TemplateHandlerExecuteParams)>& SuccessExecute);
+		TBaseDynamicDelegate SuccessCallback, FOnAuthError ErrorCallback, const TFunction<bool(TSharedPtr<FJsonObject> JsonObject, FString& ErrorStr, TBaseDynamicDelegate Delegate)>& SuccessExecute);
 
 protected:
 	void RegisterUserJWT(const FString& Username, const FString& Password, const FString& Email,

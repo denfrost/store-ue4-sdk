@@ -755,8 +755,8 @@ void UXsollaLoginSubsystem::UpdateLinkedSocialNetworks(const FString& AuthToken,
 }
 
 template <class TBaseDynamicDelegate, class ResponseType>
-void UXsollaLoginSubsystem::TemplateHandler(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
-    TBaseDynamicDelegate SuccessCallback, FOnAuthError ErrorCallback)
+void UXsollaLoginSubsystem::TemplateHandler(const FHttpRequestPtr HttpRequest, const FHttpResponsePtr HttpResponse, const bool bSucceeded,
+    TBaseDynamicDelegate SuccessCallback, const FOnAuthError ErrorCallback)
 {
 	if (HandleRequestError(HttpRequest, HttpResponse, bSucceeded, ErrorCallback))
 	{
@@ -792,7 +792,7 @@ void UXsollaLoginSubsystem::TemplateHandler(FHttpRequestPtr HttpRequest, FHttpRe
 
 template <class TBaseDynamicDelegate, class ResponseType>
 void UXsollaLoginSubsystem::TemplateHandler(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
-	TBaseDynamicDelegate SuccessCallback, FOnAuthError ErrorCallback, const TFunction<bool(TemplateHandlerExecuteParams)>& SuccessExecute)
+	TBaseDynamicDelegate SuccessCallback, FOnAuthError ErrorCallback, const TFunction<bool(TSharedPtr<FJsonObject> JsonObject, FString& ErrorStr, TBaseDynamicDelegate Delegate)>& SuccessExecute)
 {
 	if (HandleRequestError(HttpRequest, HttpResponse, bSucceeded, ErrorCallback))
 	{
@@ -805,25 +805,10 @@ void UXsollaLoginSubsystem::TemplateHandler(FHttpRequestPtr HttpRequest, FHttpRe
 	FString ErrorStr;
 
 	TSharedPtr<FJsonObject> JsonObject;
-	const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(*HttpResponse->GetContentAsString());
+	const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(*ResponseStr);
 	if (FJsonSerializer::Deserialize(Reader, JsonObject))
 	{
-		// ResponseType receivedUserSocialFriendsData;
-		// if (FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), ResponseType::StaticStruct(), &receivedUserSocialFriendsData))
-		// {
-		// 	SuccessHandler();
-		// 	SocialFriendsData = receivedUserSocialFriendsData;
-		//
-		// 	return;
-		// }
-
-		if (true)
-		{
-			// call SuccessCallback
-			SuccessExecute(JsonObject, ErrorStr, SuccessCallback);
-		}
-
-		ErrorStr = FString::Printf(TEXT("Can't process response json"));
+		SuccessExecute(JsonObject, ErrorStr, SuccessCallback);
 	}
 	else
 	{
@@ -1179,14 +1164,13 @@ void UXsollaLoginSubsystem::SocialAuthUrl_HttpRequestComplete(FHttpRequestPtr Ht
 
 	TemplateHandler<FOnSocialUrlReceived, FOnSocialUrlReceived>(HttpRequest, HttpResponse, bSucceeded,
 		SuccessCallback, ErrorCallback,
-		[](TemplateHandlerExecuteParams) -> bool
+		[](TSharedPtr<FJsonObject> JsonObject, FString& ErrorStr, FOnSocialUrlReceived Delegate) -> bool
 		{
 			static const FString SocialUrlFieldName = TEXT("url");
 			if (JsonObject->HasTypedField<EJson::String>(SocialUrlFieldName))
 			{
-				const FString SocialUrl = JsonObject.Get()->GetStringField(SocialUrlFieldName);
-				// SuccessCallback.ExecuteIfBound(SocialUrl);
-				Delegate.ExecuteIfBound();
+				const FString Url = JsonObject.Get()->GetStringField(SocialUrlFieldName);
+				Delegate.ExecuteIfBound(Url);
 				return true;
 			}
 
@@ -1194,7 +1178,6 @@ void UXsollaLoginSubsystem::SocialAuthUrl_HttpRequestComplete(FHttpRequestPtr Ht
 			return false;
 		});
 
-	return;
 	if (HandleRequestError(HttpRequest, HttpResponse, bSucceeded, ErrorCallback))
 	{
 		return;
@@ -1355,7 +1338,7 @@ void UXsollaLoginSubsystem::AccountLinkingCode_HttpRequestComplete(FHttpRequestP
 	}
 	else
 	{
-		ErrorStr = FString::Printf(TEXT("Can't deserialize response json: "), *ResponseStr);
+		ErrorStr = FString::Printf(TEXT("Can't deserialize response json: %s"), *ResponseStr);
 	}
 
 	// No success before so call the error callback
@@ -1365,42 +1348,7 @@ void UXsollaLoginSubsystem::AccountLinkingCode_HttpRequestComplete(FHttpRequestP
 void UXsollaLoginSubsystem::CheckUserAge_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
 	FOnCheckUserAgeSuccess SuccessCallback, FOnAuthError ErrorCallback)
 {
-	// After
 	TemplateHandler<FOnCheckUserAgeSuccess, FXsollaCheckUserAgeResult>(HttpRequest, HttpResponse, bSucceeded, SuccessCallback, ErrorCallback);
-
-	// Before
-	if (HandleRequestError(HttpRequest, HttpResponse, bSucceeded, ErrorCallback))
-	{
-		return;
-	}
-
-	const FString ResponseStr = HttpResponse->GetContentAsString();
-	UE_LOG(LogXsollaLogin, Verbose, TEXT("%s: Response: %s"), *VA_FUNC_LINE, *ResponseStr);
-
-	FString ErrorStr;
-
-	TSharedPtr<FJsonObject> JsonObject;
-	const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(*HttpResponse->GetContentAsString());
-	if (FJsonSerializer::Deserialize(Reader, JsonObject))
-	{
-		FXsollaCheckUserAgeResult CheckUserAgeResult;
-		if (FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), FXsollaCheckUserAgeResult::StaticStruct(), &CheckUserAgeResult))
-		{
-			SuccessCallback.ExecuteIfBound(CheckUserAgeResult);
-			return;
-		}
-		else
-		{
-			ErrorStr = FString::Printf(TEXT("Can't process response json"));
-		}
-	}
-	else
-	{
-		ErrorStr = FString::Printf(TEXT("Can't deserialize response json: %s"), *ResponseStr);
-	}
-
-	// No success before so call the error callback
-	ErrorCallback.ExecuteIfBound(TEXT("204"), ErrorStr);
 }
 
 void UXsollaLoginSubsystem::AuthConsoleAccountUser_HttpRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded,
